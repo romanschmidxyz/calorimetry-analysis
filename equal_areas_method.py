@@ -38,9 +38,6 @@ for f in range(start_index, len(time)):
         break
 
 
-
-# tm where the equal area condition is fulfilled
-
 # calculates the area between the curve and Tf from the right endpoint towards the left up to a certain index
 def area_above(index):
     area = 0
