@@ -1,18 +1,22 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-
+"""
+    This program creates a T-t calorimetry plot and calculates Delta T_X, the temperature rise upon sample
+    combustion using the equal areas method and extrapolated pre- and post-period curves.
+"""
 time = []
 temp = []
 
 # read time and temperature from csv
+# put your file name in there
 with open('data_calib_benzoicacid1.csv') as file:
     reader = csv.DictReader(file)
     for row in reader:
         time.append(int(row['Time [s]']))
         temp.append(float(row['Temperature [°C]']))
 
-# these thresholds must be adjusted to get the desired boundaries for the rise period
+# these thresholds can be adjusted to get the desired boundaries for the rise period
 # The plot serves as a helpful tool to do so    
 bottom_thresh = 0.05
 upper_thresh = 0.001
