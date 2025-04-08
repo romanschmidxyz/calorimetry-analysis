@@ -1,4 +1,4 @@
-# calorimetry-equal-areas
+# Calorimetry Analysis
 This program creates a T-t calorimetry plot and calculates Delta T_X, the temperature rise upon sample
 combustion using the equal areas method and extrapolated pre- and post-period curves.
 
