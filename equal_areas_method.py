@@ -84,7 +84,7 @@ def post_temp(t):
 # calculate DeltaTX = difference between extrapolated temperatures at time=tm
 DeltaT_x = post_temp(tm) - pre_temp(tm)
 
-print(DeltaT_x)
+print("DeltaT_x = ", DeltaT_x)
 
 # plot T-t curve
 plt.plot(time, temp)
