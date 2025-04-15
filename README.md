@@ -11,5 +11,5 @@ combustion using the equal areas method and extrapolated pre- and post-period cu
 
 ## Output
 DeltaT_x =  2.6679311422422565
-![Alt text](https://github.com/romanschmidxyz/calorimetry-equal-areas/blob/main/Tt_plot.png)
+![Alt text](https://github.com/romanschmidxyz/calorimetry-equal-areas/blob/main/plot1.png)
   
