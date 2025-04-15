@@ -1,25 +1,28 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+
 """
-    This program creates a T-t calorimetry plot and calculates Delta T_X, the temperature rise upon sample
-    combustion using the equal areas method and extrapolated pre- and post-period curves.
+    Program calculates characteristic time from bomb calorimetry data using the equal area method and returns T-t vs dT/dt vs t plots
 """
+
 time = []
 temp = []
+filename = input("What's the name of the data file?")
+sample_name = input("What's the name of the sample (for plot titles)?")
+
 
 # read time and temperature from csv
-# put your file name in there
-with open('data_calib_benzoicacid1.csv') as file:
+with open(f'{filename}.csv') as file:
     reader = csv.DictReader(file)
     for row in reader:
         time.append(int(row['Time [s]']))
         temp.append(float(row['Temperature [°C]']))
 
-# these thresholds can be adjusted to get the desired boundaries for the rise period
+# these thresholds must be adjusted to get the desired boundaries for the rise period
 # The plot serves as a helpful tool to do so    
-bottom_thresh = 0.05
-upper_thresh = 0.001
+bottom_thresh = 0.04
+upper_thresh = 0.0000001
 
 # calculate starting point of the temperature rise period
 for i in range(len(time)):
@@ -36,7 +39,6 @@ for f in range(start_index, len(time)):
         Tf = temp[f]
         end_index = f
         break
-
 
 # calculates the area between the curve and Tf from the right endpoint towards the left up to a certain index
 def area_above(index):
@@ -55,6 +57,17 @@ def area_under(index):
         trapezoid_area = ((temp[i]-Ti)+(temp[i+1]-Ti)) * delta_t / 2
         area += trapezoid_area
     return area
+
+# calculates dT/dt for point on the T-t curve
+def slope(index):
+    return (temp[index+1]-temp[index]) / (time[index+1] - time[index])
+
+slopes = []
+
+# calculate slopes dT/dt at each datapoint
+for index in range(0, min(len(time), len(temp))-1):
+    slopes.append(slope(index))
+
 
 # iterate through time and get the time where the difference between the area above and below is minimized. This approximates tm well.
 tm = 0
@@ -86,12 +99,13 @@ DeltaT_x = post_temp(tm) - pre_temp(tm)
 
 print("DeltaT_x = ", DeltaT_x)
 
-# plot T-t curve
+# plot T-t curve and slopes
+plt.subplot(1, 2, 1)
 plt.plot(time, temp)
 plt.xlabel("Time [s]")
 plt.ylabel("Temperature [°C]")
 # make sure to adjust title accordingly
-plt.title("T-t Diagram Benzoic Acid")
+plt.title(f"Temperature vs Time {sample_name}")
 
 # plot extrapolated pre- and post-periods
 plt.plot(time, [pre_temp(t) for t in time], linestyle="--", color="b")
@@ -100,6 +114,16 @@ plt.plot(time, [post_temp(t) for t in time], linestyle="--", color="b")
 # plot boundaries of rise period and location of tm
 plt.axvline(x=ti)
 plt.axvline(x=tf)
+plt.axvline(x=tm, color='r', linestyle='-')
+
+plt.subplot(1, 2, 2)
+plt.plot(time[:-1], slopes)
+plt.title(f"dT/dt vs Time for {sample_name}")
+plt.xlabel("Time [s]")
+plt.ylabel("dT/dt [K/s]")
+
+
+# also show tm in the slopes plot
 plt.axvline(x=tm, color='r', linestyle='-')
 
 plt.show()
