@@ -1,5 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
+import math
+from scipy import stats
 import numpy as np
 
 """
@@ -68,6 +70,12 @@ slopes = []
 for index in range(0, min(len(time), len(temp))-1):
     slopes.append(slope(index))
 
+# This funciton calculates the moving average of the derivatives to smoothen the (noisy) curve
+def movingaverage(interval, window_size):
+    window= np.ones(int(window_size))/float(window_size)
+    return np.convolve(interval, window, 'same')
+
+slopes_avg = movingaverage(slopes, 7)
 
 # iterate through time and get the time where the difference between the area above and below is minimized. This approximates tm well.
 tm = 0
@@ -80,24 +88,38 @@ for i in range(start_index+1, end_index):
 time_pre = time[:start_index+1]
 temp_pre = temp[:start_index+1]
 
-m, b = np.polyfit(time_pre, temp_pre, 1)
+regression_pre_period = stats.linregress(time_pre, temp_pre)
+slope_pre = regression_pre_period.slope
+intercept_pre = regression_pre_period.intercept
+slope_pre_error = regression_pre_period.stderr
+intercept_pre_error = regression_pre_period.intercept_stderr
+
 def pre_temp(t):
-    temperature = m * t + b
+    temperature = slope_pre * t + intercept_pre
     return temperature
 
 # linearly extrapolate post-period
 time_post = time[end_index:]
 temp_post = temp[end_index:]
 
-a, q = np.polyfit(time_post, temp_post, 1)
+regression_post_period = stats.linregress(time_post, temp_post)
+slope_post = regression_post_period.slope
+intercept_post = regression_post_period.intercept
+slope_post_error = regression_post_period.stderr
+intercept_post_error = regression_post_period.intercept_stderr
+
 def post_temp(t):
-    temperature = a * t + q
+    temperature = slope_post * t + intercept_post
     return temperature
 
 # calculate DeltaTX = difference between extrapolated temperatures at time=tm
 DeltaT_x = post_temp(tm) - pre_temp(tm)
 
+# calculate error of Delta T_x. Calculations are shown in README file.
+err_delta_tx = math.sqrt(tm**2 * (slope_pre_error**2 + slope_post_error**2) + intercept_post_error**2 + intercept_pre_error**2)
+
 print("DeltaT_x = ", DeltaT_x)
+print("Error of DeltaT_x = ", err_delta_tx)
 
 # plot T-t curve and slopes
 plt.subplot(1, 2, 1)
@@ -116,8 +138,9 @@ plt.axvline(x=ti)
 plt.axvline(x=tf)
 plt.axvline(x=tm, color='r', linestyle='-')
 
+# plot derivative data with moving average
 plt.subplot(1, 2, 2)
-plt.plot(time[:-1], slopes)
+plt.plot(time[:-1], slopes_avg)
 plt.title(f"dT/dt vs Time for {sample_name}")
 plt.xlabel("Time [s]")
 plt.ylabel("dT/dt [K/s]")
